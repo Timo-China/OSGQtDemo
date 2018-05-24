@@ -20,6 +20,7 @@ OSGViewWidget::OSGViewWidget(QWidget* parent /*= 0*/)
 
     this->getCamera()->setGraphicsContext(_gw);
     this->getCamera()->setViewport( new osg::Viewport(0, 0, _gw->getTraits()->width, _gw->getTraits()->height));
+    this->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.6, 1.0f));
 
     osgGA::TrackballManipulator* trackBallMpl = new osgGA::TrackballManipulator();
     setCameraManipulator(trackBallMpl);

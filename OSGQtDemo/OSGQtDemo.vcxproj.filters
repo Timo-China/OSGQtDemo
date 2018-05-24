@@ -59,6 +59,15 @@
     <ClCompile Include="GeneratedFiles\Release\moc_OSGViewWidget.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="FindChildNodeVisitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PickHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AutoRotateCallBack.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="OsgQtDemo.h">
@@ -77,6 +86,15 @@
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_osgqtdemo.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FindChildNodeVisitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PickHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AutoRotateCallBack.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
