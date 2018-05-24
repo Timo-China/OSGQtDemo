@@ -14,6 +14,10 @@ public:
     ~OSGQtDemo();
 
 private:
+    void InitOSGViewWidget();
+    void 
+
+private:
     Ui::OSGQtDemoClass ui;
     OSGViewWidget* m_pOSGWidget;
 };
