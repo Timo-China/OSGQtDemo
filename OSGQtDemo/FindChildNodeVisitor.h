@@ -16,6 +16,11 @@ public:
 
 public:
     virtual void apply(osg::Node& node);
+    virtual void apply(osg::Geode& geode);
+    virtual void apply(osg::Transform& node);
+
+    void SetSearchName(const std::string& search_name);
+    osg::Node* GetFirstNode();
 
 private:
     std::string m_strNodeName;      // ½áµãÃû³Æ

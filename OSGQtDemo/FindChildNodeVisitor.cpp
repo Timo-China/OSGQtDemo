@@ -21,3 +21,26 @@ void FindChildNodeVisitor::apply(osg::Node& node)
     }
     traverse(node);
 }
+
+void FindChildNodeVisitor::apply(osg::Geode& geode)
+{
+    apply((osg::Node&)geode);
+    traverse((osg::Node&)geode);
+}
+
+void FindChildNodeVisitor::apply(osg::Transform& node)
+{
+    apply((osg::Node&)node);
+    traverse((osg::Node&)node);
+}
+
+void FindChildNodeVisitor::SetSearchName(const std::string& search_name)
+{
+    m_strNodeName = search_name;
+    m_FoundNodeList.clear();
+}
+
+osg::Node* FindChildNodeVisitor::GetFirstNode()
+{
+    return (*m_FoundNodeList.begin());
+}

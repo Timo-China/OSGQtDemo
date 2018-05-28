@@ -25,8 +25,8 @@ private:
     void CreateTextureForNode(osg::Node* node, osg::Image* img);
 
     /*
-     *@brief:   
-     *@author:  dgy
+     *@brief:   ´´½¨HUD
+     *@author:  Timo
      *@date: 2018/05/24
      */
     osg::Camera* CreateHUD(const unsigned int& width, const unsigned int& height);

@@ -4,6 +4,7 @@
 #include <osg/Texture2D>
 #include <osg/TexGen>
 #include <osg/MatrixTransform>
+#include <osgText/Text>
 #include "PickHandler.h"
 #include "AutoRotateCallBack.h"
 
@@ -102,12 +103,24 @@ void OSGQtDemo::OnActionNewProject()
     cow_node->setName("cow_node");
 
     osg::ref_ptr<osg::Image> image=osgDB::readImageFile("Images\\blueFlowers.png");
-
     CreateTextureForNode(cow_node, image);
 
+    // 创建Cow物体
     osg::ref_ptr<osg::MatrixTransform> trans = new osg::MatrixTransform();
     trans->addChild(cow_node);
+    osg::ref_ptr<osgText::Text> label = new osgText::Text;
+    label->setCharacterSize(1);
+    label->setFont("fonts/arial.ttf");
+    label->setText("Cow");
+    // 始终面向屏幕
+    label->setAxisAlignment(osgText::Text::SCREEN);
+    // 设置文字渲染时包括一个对齐点和包围矩形
+    label->setDrawMode(osgText::Text::TEXT | osgText::Text::ALIGNMENT | osgText::Text::BOUNDINGBOX);
+    label->setAlignment(osgText::Text::CENTER_TOP);
+    label->setPosition( osg::Vec3(0,0,4) );
+    label->setColor( osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f) );
 
+    trans->addChild(label);
     trans->addUpdateCallback(new TM::AutoRotateCallBack);
 
     root->addChild(trans);
@@ -118,6 +131,11 @@ void OSGQtDemo::OnActionNewProject()
     osg::GraphicsContext* gc = m_pOSGWidget->getCamera()->getGraphicsContext();
     m_pHudCamera = CreateHUD(gc->getTraits()->width, gc->getTraits()->height);
     root->addChild(m_pHudCamera);
+
+    // 放置陆地
+    osg::ref_ptr<osg::Node> ground_node = osgDB::readNodeFile("JoeDirt/JoeDirt.flt");
+    root->addChild(ground_node);
+
 }
 
 void OSGQtDemo::CreateTextureForNode(osg::Node* node, osg::Image* img)
