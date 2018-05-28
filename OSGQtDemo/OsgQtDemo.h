@@ -29,7 +29,15 @@ private:
      *@author:  Timo
      *@date: 2018/05/24
      */
-    osg::Camera* CreateHUD(const unsigned int& width, const unsigned int& height);
+    osg::Camera* CreateHUD(const std::string& hud_text, const unsigned int& width, const unsigned int& height);
+
+
+    /*
+     *@brief:   创建
+     *@author:  Timo
+     *@date: 2018/05/28
+     */
+    void CreateCow(osg::Group* root);
 
     /*
      *@brief:   创建信号槽
@@ -38,16 +46,33 @@ private:
      */
     void CreateConnect();
 
+    /*
+     *@brief:   创建战争场景
+     *@author:  dgy
+     *@date: 2018/05/28
+     */
+    void CreateWarScene(osg::Group* root);
+
+    /*
+     *@brief:   穿甲坐标轴方便查看
+     *@author:  dgy
+     *@date: 2018/05/28
+     */
+    osg::Geode* CreateCoordinateAxis(const osg::Vec3& corner,const osg::Vec3& xdir,const osg::Vec3& ydir,const osg::Vec3& zdir);
+
 public slots:
     void OnActionNewProject();
+    void OnActionNewWarScene();
 
 protected:
     virtual void resizeEvent(QResizeEvent * event);
+    virtual void showEvent(QShowEvent *event);
 
 private:
     Ui::OSGQtDemoClass ui;
     OSGViewWidget* m_pOSGWidget;
     osg::Camera* m_pHudCamera;
+    osg::ref_ptr<osg::Group> m_SceneRoot;
 };
 
 #endif // OSGQTDEMO_H

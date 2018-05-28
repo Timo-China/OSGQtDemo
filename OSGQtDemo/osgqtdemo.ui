@@ -34,6 +34,7 @@
      <string>文件</string>
     </property>
     <addaction name="action_newproject"/>
+    <addaction name="actionNewWarScene"/>
    </widget>
    <addaction name="menuNew"/>
   </widget>
@@ -48,7 +49,15 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_newproject">
    <property name="text">
-    <string>新建</string>
+    <string>新建Cow</string>
+   </property>
+   <property name="toolTip">
+    <string>新建Cow模型</string>
+   </property>
+  </action>
+  <action name="actionNewWarScene">
+   <property name="text">
+    <string>新建战争场景</string>
    </property>
   </action>
  </widget>

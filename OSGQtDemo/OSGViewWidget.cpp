@@ -40,7 +40,7 @@ void OSGViewWidget::resizeEvent(QResizeEvent* event)
     {
         getCamera()->setViewport(0 ,0, _gw->getTraits()->width, _gw->getTraits()->height);
         getCamera()->setProjectionMatrixAsPerspective(
-            30.f, static_cast<double>(_gw->getTraits()->width)/static_cast<double>(_gw->getTraits()->height), 1.0f, 10000.0f );
+            60.f, static_cast<double>(_gw->getTraits()->width)/static_cast<double>(_gw->getTraits()->height), 10.0f, 10000.0f );
     }
 
     frame();
