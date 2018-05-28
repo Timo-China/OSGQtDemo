@@ -1,4 +1,5 @@
 #include "FindChildNodeVisitor.h"
+#include <osgSim/DOFTransform>
 
 
 FindChildNodeVisitor::FindChildNodeVisitor(const std::string& node_name)
@@ -30,6 +31,11 @@ void FindChildNodeVisitor::apply(osg::Geode& geode)
 
 void FindChildNodeVisitor::apply(osg::Transform& node)
 {
+    osgSim::DOFTransform* dofNode = dynamic_cast<osgSim::DOFTransform*> (&node);
+    if (dofNode)
+    {
+        dofNode->setAnimationOn(false);
+    }
     apply((osg::Node&)node);
     traverse((osg::Node&)node);
 }

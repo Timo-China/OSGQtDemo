@@ -9,6 +9,8 @@
 #include <osg/PositionAttitudeTransform>
 #include "PickHandler.h"
 #include "AutoRotateCallBack.h"
+#include "TankOperator.h"
+#include "TankNodeCallback.h"
 
 OSGQtDemo::OSGQtDemo(QWidget *parent)
     : QMainWindow(parent),
@@ -178,16 +180,30 @@ void OSGQtDemo::CreateCow(osg::Group* root)
 void OSGQtDemo::CreateWarScene(osg::Group* root)
 {
     // 放置陆地
-    osg::ref_ptr<osg::Node> ground_node = osgDB::readNodeFile("JoeDirt/JoeDirt.flt");
-    root->addChild(ground_node);
+//     osg::ref_ptr<osg::Node> ground_node = osgDB::readNodeFile("JoeDirt/JoeDirt.flt");
+//     root->addChild(ground_node);
 
     osg::ref_ptr<osg::Node> tank_Node = osgDB::readNodeFile("T72-tank/t72-tank_des.flt");
+    osg::ref_ptr<TankOperator> tank_oper = new TankOperator(tank_Node);
+    tank_Node->setUserData(tank_oper);
+    tank_Node->addUpdateCallback(new TM::TankNodeCallback);
     osg::ref_ptr<osg::PositionAttitudeTransform> tank_pos_trans = new osg::PositionAttitudeTransform();
     tank_pos_trans->addChild(tank_Node);
     root->addChild(tank_pos_trans);
+    tank_pos_trans->setPosition(osg::Vec3d(5.0, -10.0, 0.0));
 
-    tank_pos_trans->setPosition(osg::Vec3d(0.0, -10.0, 0.0));
 
+    // 设置第二个坦克
+    osg::ref_ptr<osg::PositionAttitudeTransform> second_trans = new osg::PositionAttitudeTransform();
+    osg::ref_ptr<osg::Node> second_tank_node = dynamic_cast<osg::Node*>(tank_Node->clone(osg::CopyOp::DEEP_COPY_ALL));
+    osg::ref_ptr<TankOperator> second_tank_oper = new TankOperator(second_tank_node);
+    second_tank_node->setUserData(second_tank_oper);
+    second_tank_oper->ShowTank(false);
+    second_trans->addChild(second_tank_node);
+    second_trans->setPosition(osg::Vec3d(10.0, -10.0, 0.0));
+    second_trans->setAttitude(osg::Quat(osg::PI/8.0, osg::Vec3(0,0,1))); // 按Z轴旋转
+
+    root->addChild(second_trans);
 }
 
 void OSGQtDemo::showEvent(QShowEvent *event)
