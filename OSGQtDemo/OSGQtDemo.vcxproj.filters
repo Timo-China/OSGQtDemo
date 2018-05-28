@@ -74,6 +74,9 @@
     <ClCompile Include="TankNodeCallback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TankKeyHandlerEvent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="OsgQtDemo.h">
@@ -106,6 +109,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TankNodeCallback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TankKeyHandlerEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

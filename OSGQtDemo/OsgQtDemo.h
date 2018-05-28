@@ -60,6 +60,43 @@ private:
      */
     osg::Geode* CreateCoordinateAxis(const osg::Vec3& corner,const osg::Vec3& xdir,const osg::Vec3& ydir,const osg::Vec3& zdir);
 
+public:
+
+    void ToggleAA();
+    void RotateTurrentRight();
+    void StopTurrentRight();
+    void RotateTurrentLeft();
+    void StopTurrentLeft();
+
+    /*
+     *@brief:   ¥¶¿ÌAA
+     *@author:  Timo
+     *@date: 2018/05/28
+     */
+    static void ToggleAACallback(void* handle_window);
+
+    /*
+     *@brief:   
+     *@author:  Timo
+     *@date: 2018/05/28
+     */
+    static void RotateTurrentRightCallback(void* handle_window);
+
+
+    /*
+     *@brief:   
+     *@author:  Timo
+     *@date: 2018/05/28
+     */
+    static void RotateTurrentLeftCallback(void* handle_window);
+
+    /*
+     *@brief:   
+     *@author:  Timo
+     *@date: 2018/05/28
+     */
+    static void StopTurrentCallback(void* handle_window);
+
 public slots:
     void OnActionNewProject();
     void OnActionNewWarScene();

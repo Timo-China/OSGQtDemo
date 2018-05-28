@@ -11,6 +11,7 @@
 #include "AutoRotateCallBack.h"
 #include "TankOperator.h"
 #include "TankNodeCallback.h"
+#include "TankKeyHandlerEvent.h"
 
 OSGQtDemo::OSGQtDemo(QWidget *parent)
     : QMainWindow(parent),
@@ -39,6 +40,16 @@ void OSGQtDemo::InitOSGViewWidget()
         m_SceneRoot = new osg::Group;
         m_SceneRoot->setName("root");
         m_pOSGWidget->setSceneData(m_SceneRoot);
+
+        // 键盘处理
+        TM::TankKeyHandlerEvent* tank_key_handler = new TM::TankKeyHandlerEvent();
+        tank_key_handler->setCallbackWindow(this);
+        tank_key_handler->addFunction('a', OSGQtDemo::ToggleAACallback);
+        tank_key_handler->addFunction('k',TM::TankKeyHandlerEvent::KEY_DOWN,OSGQtDemo::RotateTurrentRightCallback);
+        tank_key_handler->addFunction('k',TM::TankKeyHandlerEvent::KEY_UP,OSGQtDemo::StopTurrentCallback);
+        tank_key_handler->addFunction('j',OSGQtDemo::RotateTurrentLeftCallback);
+        tank_key_handler->addFunction('j',TM::TankKeyHandlerEvent::KEY_UP,OSGQtDemo::StopTurrentCallback);
+        m_pOSGWidget->addEventHandler(tank_key_handler);
     }
 }
 
@@ -113,7 +124,7 @@ void OSGQtDemo::OnActionNewProject()
 void OSGQtDemo::OnActionNewWarScene()
 {
     CreateWarScene(m_SceneRoot.get());
-    // m_SceneRoot->addChild(CreateCoordinateAxis(osg::Vec3(0.0f,0.0f,0.0f),osg::Vec3(1.0f,0.0f,0.0f),osg::Vec3(0.0f,1.0f,0.0f),osg::Vec3(0.0f,0.0f,1.0f)));
+    m_SceneRoot->addChild(CreateCoordinateAxis(osg::Vec3(0.0f,0.0f,0.0f),osg::Vec3(5.0f,0.0f,0.0f),osg::Vec3(0.0f,5.0f,0.0f),osg::Vec3(0.0f,0.0f,5.0f)));
 
 }
 
@@ -185,13 +196,17 @@ void OSGQtDemo::CreateWarScene(osg::Group* root)
 //     root->addChild(ground_node);
 
     osg::ref_ptr<osg::Node> tank_Node = osgDB::readNodeFile("T72-tank/t72-tank_des.flt");
+    if (!tank_Node.valid())
+    {
+        return;
+    }
     osg::ref_ptr<TankOperator> tank_oper = new TankOperator(tank_Node);
     tank_Node->setUserData(tank_oper);
     tank_Node->addUpdateCallback(new TM::TankNodeCallback);
     osg::ref_ptr<osg::PositionAttitudeTransform> tank_pos_trans = new osg::PositionAttitudeTransform();
     tank_pos_trans->addChild(tank_Node);
     root->addChild(tank_pos_trans);
-    tank_pos_trans->setPosition(osg::Vec3d(5.0, -10.0, 0.0));
+    tank_pos_trans->setPosition(osg::Vec3d(5.0, 0.0, 0.0));
 
 
     // 设置第二个坦克
@@ -201,7 +216,7 @@ void OSGQtDemo::CreateWarScene(osg::Group* root)
     second_tank_node->setUserData(second_tank_oper);
     second_tank_oper->ShowTank(false);
     second_trans->addChild(second_tank_node);
-    second_trans->setPosition(osg::Vec3d(10.0, -10.0, 0.0));
+    second_trans->setPosition(osg::Vec3d(-5.0, 0.0, 0.0));
     second_trans->setAttitude(osg::Quat(osg::PI/8.0, osg::Vec3(0,0,1))); // 按Z轴旋转
 
     root->addChild(second_trans);
@@ -285,4 +300,65 @@ osg::Geode* OSGQtDemo::CreateCoordinateAxis(const osg::Vec3& corner,
 
 
     return geode.release();
+}
+
+void OSGQtDemo::ToggleAA()
+{
+
+}
+
+void OSGQtDemo::RotateTurrentRight()
+{
+
+}
+
+void OSGQtDemo::StopTurrentRight()
+{
+
+}
+
+void OSGQtDemo::RotateTurrentLeft()
+{
+
+}
+
+void OSGQtDemo::StopTurrentLeft()
+{
+
+}
+
+void OSGQtDemo::ToggleAACallback(void* handle_window)
+{
+    OSGQtDemo* window = static_cast<OSGQtDemo*>(handle_window);
+    if (window)
+    {
+        window->ToggleAA();
+    }
+}
+
+void OSGQtDemo::RotateTurrentRightCallback(void* handle_window)
+{
+    OSGQtDemo* window = static_cast<OSGQtDemo*>(handle_window);
+    if (window)
+    {
+        window->RotateTurrentRight();
+    }
+}
+
+void OSGQtDemo::RotateTurrentLeftCallback(void* handle_window)
+{
+    OSGQtDemo* window = static_cast<OSGQtDemo*>(handle_window);
+    if (window)
+    {
+        window->RotateTurrentLeft();
+    }
+}
+
+void OSGQtDemo::StopTurrentCallback(void* handle_window)
+{
+    OSGQtDemo* window = static_cast<OSGQtDemo*>(handle_window);
+    if (window)
+    {
+        window->StopTurrentLeft();
+    }
 }
