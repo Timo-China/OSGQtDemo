@@ -16,11 +16,20 @@ OSGViewWidget::OSGViewWidget(QWidget* parent /*= 0*/)
 //     GLenum buffer = _gw->getTraits()->doubleBuffer ? GL_BACK : GL_FRONT;
 //     camera->setDrawBuffer(buffer);
 //     camera->setReadBuffer(buffer);
+//     camera->setProjectionMatrixAsPerspective(30.f,
+//         static_cast<double>(_gw->getTraits()->width)/static_cast<double>(_gw->getTraits()->height),
+//         10.0f, 10000.0f );
+//     // 对比两种设置Camera方式，调用setGlobalDefaults()的图像区别比较大
+//     camera->getOrCreateStateSet()->setGlobalDefaults();
 //     this->setCamera(camera.get());
 
     this->getCamera()->setGraphicsContext(_gw);
     this->getCamera()->setViewport( new osg::Viewport(0, 0, _gw->getTraits()->width, _gw->getTraits()->height));
     this->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.6, 1.0f));
+    GLenum buffer = _gw->getTraits()->doubleBuffer ? GL_BACK : GL_FRONT;
+    getCamera()->setDrawBuffer(buffer);
+    getCamera()->setReadBuffer(buffer);
+    getCamera()->setClearDepth(1.0);
 
     osgGA::TrackballManipulator* trackBallMpl = new osgGA::TrackballManipulator();
     setCameraManipulator(trackBallMpl);
@@ -40,7 +49,7 @@ void OSGViewWidget::resizeEvent(QResizeEvent* event)
     {
         getCamera()->setViewport(0 ,0, _gw->getTraits()->width, _gw->getTraits()->height);
         getCamera()->setProjectionMatrixAsPerspective(
-            60.f, static_cast<double>(_gw->getTraits()->width)/static_cast<double>(_gw->getTraits()->height), 10.0f, 10000.0f );
+            30.f, static_cast<double>(_gw->getTraits()->width)/static_cast<double>(_gw->getTraits()->height), 10.0f, 10000.0f );
     }
 
     frame();

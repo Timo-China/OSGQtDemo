@@ -68,6 +68,7 @@ osg::Camera* OSGQtDemo::CreateHUD(const std::string& hud_text, const unsigned in
 
         {
             osgText::Text* text = new  osgText::Text;
+            text->setCharacterSizeMode(osgText::TextBase::SCREEN_COORDS);
             text->setName("hud_geode");
             geode->addDrawable( text );
 
