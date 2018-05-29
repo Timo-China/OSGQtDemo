@@ -52,3 +52,9 @@ void TankOperator::ShowTank(bool is_good_tank)
     }
     m_pTankMutiSwitch->setSingleChildOn(0, status);
 }
+
+void TankOperator::RotateTurret(double rotate_angle)
+{
+    m_dTurretRotation = rotate_angle;
+    m_pTankTurretNode->setCurrentHPR( osg::Vec3(m_dTurretRotation,0,0));
+}

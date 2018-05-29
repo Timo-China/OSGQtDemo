@@ -15,7 +15,10 @@
 
 OSGQtDemo::OSGQtDemo(QWidget *parent)
     : QMainWindow(parent),
-    m_pHudCamera(NULL)
+    m_pHudCamera(NULL),
+    m_pTankNode(NULL),
+    m_dTurrentAngle(0.0),
+    m_bGoodTank(true)
 {
     ui.setupUi(this);
     m_pOSGWidget = new OSGViewWidget(this);
@@ -45,10 +48,10 @@ void OSGQtDemo::InitOSGViewWidget()
         TM::TankKeyHandlerEvent* tank_key_handler = new TM::TankKeyHandlerEvent();
         tank_key_handler->setCallbackWindow(this);
         tank_key_handler->addFunction('a', OSGQtDemo::ToggleAACallback);
-        tank_key_handler->addFunction('k',TM::TankKeyHandlerEvent::KEY_DOWN,OSGQtDemo::RotateTurrentRightCallback);
-        tank_key_handler->addFunction('k',TM::TankKeyHandlerEvent::KEY_UP,OSGQtDemo::StopTurrentCallback);
-        tank_key_handler->addFunction('j',OSGQtDemo::RotateTurrentLeftCallback);
-        tank_key_handler->addFunction('j',TM::TankKeyHandlerEvent::KEY_UP,OSGQtDemo::StopTurrentCallback);
+        tank_key_handler->addFunction('r',TM::TankKeyHandlerEvent::KEY_DOWN,OSGQtDemo::RotateTurrentRightCallback);
+        tank_key_handler->addFunction('r',TM::TankKeyHandlerEvent::KEY_UP,OSGQtDemo::StopTurrentCallback);
+        tank_key_handler->addFunction('l',OSGQtDemo::RotateTurrentLeftCallback);
+        tank_key_handler->addFunction('l',TM::TankKeyHandlerEvent::KEY_UP,OSGQtDemo::StopTurrentCallback);
         m_pOSGWidget->addEventHandler(tank_key_handler);
     }
 }
@@ -119,12 +122,17 @@ void OSGQtDemo::CreateConnect()
 void OSGQtDemo::OnActionNewProject()
 {
     CreateCow(m_SceneRoot.get());
+    // 由于初始状态是未添加任何物体，所以未计算初始位置，所以添加新的物体后需要重新计算一下初始位置
+    m_pOSGWidget->home();
 }
 
 void OSGQtDemo::OnActionNewWarScene()
 {
     CreateWarScene(m_SceneRoot.get());
     m_SceneRoot->addChild(CreateCoordinateAxis(osg::Vec3(0.0f,0.0f,0.0f),osg::Vec3(5.0f,0.0f,0.0f),osg::Vec3(0.0f,5.0f,0.0f),osg::Vec3(0.0f,0.0f,5.0f)));
+
+    // 由于初始状态是未添加任何物体，所以未计算初始位置，所以添加新的物体后需要重新计算一下初始位置
+    m_pOSGWidget->home();
 
 }
 
@@ -211,11 +219,11 @@ void OSGQtDemo::CreateWarScene(osg::Group* root)
 
     // 设置第二个坦克
     osg::ref_ptr<osg::PositionAttitudeTransform> second_trans = new osg::PositionAttitudeTransform();
-    osg::ref_ptr<osg::Node> second_tank_node = dynamic_cast<osg::Node*>(tank_Node->clone(osg::CopyOp::DEEP_COPY_ALL));
-    osg::ref_ptr<TankOperator> second_tank_oper = new TankOperator(second_tank_node);
-    second_tank_node->setUserData(second_tank_oper);
+    m_pTankNode = dynamic_cast<osg::Node*>(tank_Node->clone(osg::CopyOp::DEEP_COPY_ALL));
+    osg::ref_ptr<TankOperator> second_tank_oper = new TankOperator(m_pTankNode);
+    m_pTankNode->setUserData(second_tank_oper);
     second_tank_oper->ShowTank(false);
-    second_trans->addChild(second_tank_node);
+    second_trans->addChild(m_pTankNode);
     second_trans->setPosition(osg::Vec3d(-5.0, 0.0, 0.0));
     second_trans->setAttitude(osg::Quat(osg::PI/8.0, osg::Vec3(0,0,1))); // 按Z轴旋转
 
@@ -304,12 +312,28 @@ osg::Geode* OSGQtDemo::CreateCoordinateAxis(const osg::Vec3& corner,
 
 void OSGQtDemo::ToggleAA()
 {
-
+    if (m_pTankNode)
+    {
+        osg::ref_ptr<TankOperator> tank_oper = dynamic_cast<TankOperator*>(m_pTankNode->getUserData());
+        if (tank_oper)
+        {
+            m_bGoodTank = !m_bGoodTank;
+            tank_oper->ShowTank(m_bGoodTank);
+        }
+    }
 }
 
 void OSGQtDemo::RotateTurrentRight()
 {
-
+    if (m_pTankNode)
+    {
+        osg::ref_ptr<TankOperator> tank_oper = dynamic_cast<TankOperator*>(m_pTankNode->getUserData());
+        if (tank_oper)
+        {
+            m_dTurrentAngle += 0.01;
+            tank_oper->RotateTurret(m_dTurrentAngle);
+        }
+    }
 }
 
 void OSGQtDemo::StopTurrentRight()
@@ -319,7 +343,15 @@ void OSGQtDemo::StopTurrentRight()
 
 void OSGQtDemo::RotateTurrentLeft()
 {
-
+    if (m_pTankNode)
+    {
+        osg::ref_ptr<TankOperator> tank_oper = dynamic_cast<TankOperator*>(m_pTankNode->getUserData());
+        if (tank_oper)
+        {
+            m_dTurrentAngle -= 0.01;
+            tank_oper->RotateTurret(m_dTurrentAngle);
+        }
+    }
 }
 
 void OSGQtDemo::StopTurrentLeft()

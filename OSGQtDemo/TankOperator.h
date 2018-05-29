@@ -33,6 +33,13 @@ public:
      */
     void ShowTank(bool is_good_tank);
 
+    /*
+     *@brief:   Ðý×ªÅÚËþ
+     *@author:  Timo
+     *@date: 2018/05/29
+     */
+    void RotateTurret(double rotate_angle);
+
 private:
     double m_dTurretRotation;
     double m_dGunElevation;

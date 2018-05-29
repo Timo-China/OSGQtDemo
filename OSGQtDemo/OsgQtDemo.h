@@ -69,14 +69,14 @@ public:
     void StopTurrentLeft();
 
     /*
-     *@brief:   处理AA
+     *@brief:   显示好坦克与坏坦克回调
      *@author:  Timo
      *@date: 2018/05/28
      */
     static void ToggleAACallback(void* handle_window);
 
     /*
-     *@brief:   
+     *@brief:   右旋转炮塔回调
      *@author:  Timo
      *@date: 2018/05/28
      */
@@ -84,7 +84,7 @@ public:
 
 
     /*
-     *@brief:   
+     *@brief:   左旋转炮塔回调
      *@author:  Timo
      *@date: 2018/05/28
      */
@@ -110,6 +110,9 @@ private:
     OSGViewWidget* m_pOSGWidget;
     osg::Camera* m_pHudCamera;
     osg::ref_ptr<osg::Group> m_SceneRoot;
+    osg::Node* m_pTankNode; // 第二个坦克
+    bool m_bGoodTank;   // 默认显示好坦克
+    double m_dTurrentAngle;
 };
 
 #endif // OSGQTDEMO_H

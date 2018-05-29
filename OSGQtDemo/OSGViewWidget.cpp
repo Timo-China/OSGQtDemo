@@ -33,7 +33,6 @@ OSGViewWidget::OSGViewWidget(QWidget* parent /*= 0*/)
 
     osgGA::TrackballManipulator* trackBallMpl = new osgGA::TrackballManipulator();
     setCameraManipulator(trackBallMpl);
-
 }
 
 
@@ -48,8 +47,9 @@ void OSGViewWidget::resizeEvent(QResizeEvent* event)
     if (_gw->getTraits()->height > 0)
     {
         getCamera()->setViewport(0 ,0, _gw->getTraits()->width, _gw->getTraits()->height);
+        // 分析OSG源码后，相机的坐标系统影响home初始化
         getCamera()->setProjectionMatrixAsPerspective(
-            30.f, static_cast<double>(_gw->getTraits()->width)/static_cast<double>(_gw->getTraits()->height), 10.0f, 10000.0f );
+            60.f, static_cast<double>(_gw->getTraits()->width)/static_cast<double>(_gw->getTraits()->height), 1.0f, 10000.0f );
     }
 
     frame();
