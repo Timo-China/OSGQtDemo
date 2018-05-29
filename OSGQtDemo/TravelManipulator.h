@@ -6,6 +6,7 @@
 #define _TRAVEL_MANIPULATOR_H_
 
 #include <osgGA/CameraManipulator>
+#include <osgViewer/Viewer>
 
 namespace TM
 {
@@ -13,10 +14,15 @@ namespace TM
         public osgGA::CameraManipulator
     {
     public:
-        TravelManipulator(void);
+        TravelManipulator(osgViewer::Viewer* osg_viewer);
         ~TravelManipulator(void);
 
     public:
+        static TravelManipulator* CreateManipulator(osgViewer::Viewer* viewer);
+
+    public:
+        virtual void setByMatrix(const osg::Matrixd& matrix);
+        virtual void setByInverseMatrix(const osg::Matrixd& matrix);
         virtual osg::Matrixd getMatrix() const;
         virtual osg::Matrixd getInverseMatrix() const;
         virtual bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us);
@@ -42,6 +48,8 @@ namespace TM
 
         double m_dScreenAngle;
         bool m_bImpact; // ÊÇ·ñÅö×²¼ì²â
+
+        osgViewer::Viewer* m_pOSGViewer;
 
     };
 }

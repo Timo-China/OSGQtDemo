@@ -3,13 +3,14 @@
 
 namespace TM
 {
-    TravelManipulator::TravelManipulator(void)
+    TravelManipulator::TravelManipulator(osgViewer::Viewer* osg_viewer)
         :m_dSpeed(1.0),
         m_bMousePress(false),
         m_dMouseX(0),
         m_dMouseY(0),
         m_dScreenAngle(2.5),
-        m_bImpact(true)
+        m_bImpact(true),
+        m_pOSGViewer(osg_viewer)
     {
         m_vPosition = osg::Vec3(-22.0, -247.0, 100.0);
         m_vRotation = osg::Vec3(osg::PI_2, 0, 0);
@@ -18,6 +19,16 @@ namespace TM
 
     TravelManipulator::~TravelManipulator(void)
     {
+    }
+
+    void TravelManipulator::setByMatrix(const osg::Matrixd& matrix)
+    {
+        // CameraManipulator::setByMatrix(matrix);
+    }
+
+    void TravelManipulator::setByInverseMatrix(const osg::Matrixd& matrix)
+    {
+        // CameraManipulator::setByInverseMatrix(matrix);
     }
 
     osg::Matrixd TravelManipulator::getMatrix() const
@@ -187,15 +198,29 @@ namespace TM
             inter_group->addIntersector(line_z.get());
             osgUtil::IntersectionVisitor inter_visitor(inter_group.get());
 
-            if (!inter_group->containsIntersections())
+            if (m_pOSGViewer)
             {
-                m_vPosition += offset;
+                m_pOSGViewer->getSceneData()->accept(inter_visitor);
+                if (!inter_group->containsIntersections())
+                {
+                    m_vPosition += offset;
+                }
             }
         }
         else
         {
             m_vPosition += offset;
         }
+    }
+
+    TravelManipulator* TravelManipulator::CreateManipulator(osgViewer::Viewer* viewer)
+    {
+        if (viewer)
+        {
+            TM::TravelManipulator* manipulator = new TM::TravelManipulator(viewer);
+            return manipulator;
+        }
+        return NULL;
     }
 
 }
