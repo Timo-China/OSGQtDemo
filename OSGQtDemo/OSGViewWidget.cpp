@@ -3,7 +3,8 @@
 
 
 OSGViewWidget::OSGViewWidget(QWidget* parent /*= 0*/)
-    :osgQt::GLWidget(parent)
+    :osgQt::GLWidget(parent),
+    m_pTravelManipulator(NULL)
 {
     this->setThreadingModel(osgViewer::ViewerBase::SingleThreaded);
     this->_gw = new osgQt::GraphicsWindowQt(this);
@@ -31,8 +32,12 @@ OSGViewWidget::OSGViewWidget(QWidget* parent /*= 0*/)
     getCamera()->setReadBuffer(buffer);
     getCamera()->setClearDepth(1.0);
 
-    osgGA::TrackballManipulator* trackBallMpl = new osgGA::TrackballManipulator();
-    setCameraManipulator(trackBallMpl);
+//     osgGA::TrackballManipulator* trackBallMpl = new osgGA::TrackballManipulator();
+//     setCameraManipulator(trackBallMpl);
+    m_pTravelManipulator = TM::TravelManipulator::CreateManipulator(this);
+
+    setCameraManipulator(m_pTravelManipulator.get());
+
 }
 
 

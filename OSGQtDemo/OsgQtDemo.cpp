@@ -36,7 +36,7 @@ void OSGQtDemo::InitOSGViewWidget()
 {
     if (m_pOSGWidget)
     {
-        m_pOSGWidget->addEventHandler( new osgViewer::StatsHandler );
+        // m_pOSGWidget->addEventHandler( new osgViewer::StatsHandler );
         m_pOSGWidget->addEventHandler(new osgViewer::ScreenCaptureHandler);
         m_pOSGWidget->addEventHandler(new osgViewer::HelpHandler);
         m_pOSGWidget->addEventHandler(new TM::PickHandler);
