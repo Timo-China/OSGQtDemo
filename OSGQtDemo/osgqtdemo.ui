@@ -35,6 +35,7 @@
     </property>
     <addaction name="action_newproject"/>
     <addaction name="actionNewWarScene"/>
+    <addaction name="actionLight_test"/>
    </widget>
    <addaction name="menuNew"/>
   </widget>
@@ -58,6 +59,11 @@
   <action name="actionNewWarScene">
    <property name="text">
     <string>新建战争场景</string>
+   </property>
+  </action>
+  <action name="actionLight_test">
+   <property name="text">
+    <string>光照测试</string>
    </property>
   </action>
  </widget>
