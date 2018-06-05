@@ -4,6 +4,7 @@
 #include <QtWidgets/QMainWindow>
 #include <Osg/TextureCubeMap>
 #include <osgShadow/ShadowedScene>
+#include <osg/Sequence>
 #include "ui_osgqtdemo.h"
 #include "OSGViewWidget.h"
 
@@ -83,7 +84,28 @@ private:
      */
     osg::Node* CreateLights(osg::BoundingBox& bb,osg::StateSet* rootStateSet);
 
+    /*
+     *@brief:   创建阴影
+     *@author:  Timo
+     *@date: 2018/06/05
+     */
     osg::ref_ptr<osgShadow::ShadowedScene> CreateShadow();
+
+
+    /*
+     *@brief:   创建帧动画
+     *@author:  Timo
+     *@date: 2018/06/05
+     */
+    osg::ref_ptr<osg::Sequence> CreateSequence();
+
+
+    /*
+     *@brief:   放大结点
+     *@author:  dgy
+     *@date: 2018/06/05
+     */
+    osg::ref_ptr<osg::Node> ScaleNode(osg::Node* node, float target_scale);
 
 public:
 
@@ -127,6 +149,7 @@ public slots:
     void OnActionNewWarScene();
     void OnActionLightTest();
     void OnActionClearScene();
+    void OnActionSequeceTest();
 
 protected:
     virtual void resizeEvent(QResizeEvent * event);

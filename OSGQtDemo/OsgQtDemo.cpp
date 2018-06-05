@@ -124,6 +124,8 @@ void OSGQtDemo::CreateConnect()
     connect(ui.actionNewWarScene, &QAction::triggered, this, &OSGQtDemo::OnActionNewWarScene);
     connect(ui.actionLight_test, &QAction::triggered, this, &OSGQtDemo::OnActionLightTest);
     connect(ui.actionClearScene, &QAction::triggered, this, &OSGQtDemo::OnActionClearScene);
+    connect(ui.actionSequence_test, &QAction::triggered, this, &OSGQtDemo::OnActionSequeceTest);
+    
 }
 
 void OSGQtDemo::OnActionNewProject()
@@ -694,6 +696,69 @@ osg::ref_ptr<osgShadow::ShadowedScene> OSGQtDemo::CreateShadow()
     shadowedScene->setShadowTechnique(softS);
 
     return shadowedScene;
+}
+
+void OSGQtDemo::OnActionSequeceTest()
+{
+    osg::ref_ptr<osg::Sequence> seq = CreateSequence();
+
+    m_SceneRoot->addChild(seq.get());
+
+    m_pOSGWidget->home();
+}
+
+osg::ref_ptr<osg::Sequence> OSGQtDemo::CreateSequence()
+{
+    osg::ref_ptr<osg::Sequence> seq = new osg::Sequence;
+
+    typedef std::vector<std::string> FileNames;
+
+    FileNames file_names;
+
+    file_names.push_back("cow.osg");
+    file_names.push_back("spaceship.osg");
+    file_names.push_back("cessna.osg");
+    file_names.push_back("glider.osg");
+
+    for (FileNames::iterator iter = file_names.begin(); iter != file_names.end(); iter++)
+    {
+        osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(*iter);
+
+        if (node)
+        {
+            seq->addChild(ScaleNode(node.get(), 100.f));
+            seq->setTime(seq->getNumChildren() - 1, 1.0f);
+        }
+    }
+
+    seq->setInterval(osg::Sequence::LOOP, 0, -1);
+
+    seq->setDuration(1.0f);
+
+    seq->setMode(osg::Sequence::START);
+
+    return seq;
+}
+
+osg::ref_ptr<osg::Node> OSGQtDemo::ScaleNode(osg::Node* node, float target_scale)
+{
+    const osg::BoundingSphere& bound_sphere = node->getBound();
+
+    float scale = target_scale / bound_sphere.radius();
+
+    osg::ref_ptr<osg::PositionAttitudeTransform> pat = new osg::PositionAttitudeTransform();
+
+    pat->setPosition(osg::Vec3(0.0, 0.0, 0.0));
+
+    pat->setScale(osg::Vec3(scale, scale, scale));
+
+    pat->setDataVariance(osg::Object::DYNAMIC);
+    pat->addChild(node);
+
+    pat->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
+
+    return pat;
+
 }
 
 
