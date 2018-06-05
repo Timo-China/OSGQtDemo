@@ -9,7 +9,6 @@
 #include <osg/PositionAttitudeTransform>
 #include <osgUtil/SmoothingVisitor>
 #include <osg/Point>
-#include <osgShadow/ShadowedScene>
 #include <osgShadow/ShadowTexture>
 #include <osgShadow/ParallelSplitShadowMap>
 #include <osgShadow/MinimalShadowMap>
@@ -149,26 +148,7 @@ void OSGQtDemo::OnActionLightTest()
     // 光照测试
     osg::ref_ptr<osg::Node> glider_node = osgDB::readNodeFile("glider.osg");
 
-    //标识阴影接收对象  
-    const int ReceivesShadowTraversalMask=0x1;
-    //标识阴影投影对象  
-    const int CastsShadowTraversalMask=0x2;
-
-    //创建一个阴影节点，并标识接收对象和投影对象
-    osg::ref_ptr<osgShadow::ShadowedScene> shadowedScene = new osgShadow::ShadowedScene();
-    shadowedScene->setReceivesShadowTraversalMask(ReceivesShadowTraversalMask);
-    shadowedScene->setCastsShadowTraversalMask(CastsShadowTraversalMask);
-
-    //创建阴影纹理，使用的是shadowTexture技法  
-    osg::ref_ptr<osgShadow::ShadowTexture> st = new osgShadow::ShadowTexture;
-    osg::ref_ptr<osgShadow::ParallelSplitShadowMap> pss = new osgShadow::ParallelSplitShadowMap;
-    //osg::ref_ptr<osgShadow::ShadowVolume> sv = new osgShadow::ShadowVolume;
-    osg::ref_ptr<osgShadow::MinimalShadowMap> ms = new osgShadow::MinimalShadowMap;
-    osg::ref_ptr<osgShadow::StandardShadowMap> ss = new osgShadow::StandardShadowMap;
-    osg::ref_ptr<osgShadow::SoftShadowMap> softS = new osgShadow::SoftShadowMap;
-    osg::ref_ptr<osgShadow::ViewDependentShadowTechnique> vds = new osgShadow::ViewDependentShadowTechnique; 
-    //关联阴影纹理  
-    shadowedScene->setShadowTechnique(softS);
+    osg::ref_ptr<osgShadow::ShadowedScene> shadowedScene = CreateShadow();
 
     CreateRoom(shadowedScene.get(), glider_node);
 
@@ -495,7 +475,7 @@ osg::Geometry* OSGQtDemo::CreateWall(const osg::Vec3& v1,const osg::Vec3& v2,
 
 }
 
-void OSGQtDemo::CreateRoom(osg::Group* root, const osg::ref_ptr<osg::Node>& load_model)
+void OSGQtDemo::CreateRoom(osgShadow::ShadowedScene* shadow_scene, const osg::ref_ptr<osg::Node>& load_model)
 {
     osg::BoundingSphere bound_sphere;
 
@@ -509,7 +489,7 @@ void OSGQtDemo::CreateRoom(osg::Group* root, const osg::ref_ptr<osg::Node>& load
         pat->addChild(load_model);
         bound_sphere = pat->getBound();
 
-        root->addChild(pat);
+        shadow_scene->addChild(pat);
     }
 
     bound_sphere.radius() *= 2.f;
@@ -518,7 +498,7 @@ void OSGQtDemo::CreateRoom(osg::Group* root, const osg::ref_ptr<osg::Node>& load
 
     // create statesets.
     osg::StateSet* rootStateSet = new osg::StateSet;
-    root->setStateSet(rootStateSet);
+    shadow_scene->setStateSet(rootStateSet);
 
     osg::StateSet* wall = new osg::StateSet;
     wall->setMode(GL_CULL_FACE,osg::StateAttribute::ON);
@@ -566,9 +546,9 @@ void OSGQtDemo::CreateRoom(osg::Group* root, const osg::ref_ptr<osg::Node>& load
         bb.corner(4),
         roof));
 
-    root->addChild(geode);
+    shadow_scene->addChild(geode);
 
-    root->addChild(CreateLights(bb, rootStateSet));
+    shadow_scene->addChild(CreateLights(bb, rootStateSet));
 }
 
 
@@ -688,6 +668,32 @@ void OSGQtDemo::OnActionClearScene()
         }
         m_pOSGWidget->update();
     }
+}
+
+osg::ref_ptr<osgShadow::ShadowedScene> OSGQtDemo::CreateShadow()
+{
+    //标识阴影接收对象  
+    const int ReceivesShadowTraversalMask=0x1;
+    //标识阴影投影对象  
+    const int CastsShadowTraversalMask=0x2;
+
+    //创建一个阴影节点，并标识接收对象和投影对象
+    osg::ref_ptr<osgShadow::ShadowedScene> shadowedScene = new osgShadow::ShadowedScene();
+    shadowedScene->setReceivesShadowTraversalMask(ReceivesShadowTraversalMask);
+    shadowedScene->setCastsShadowTraversalMask(CastsShadowTraversalMask);
+
+    //创建阴影纹理，使用的是shadowTexture技法
+    osg::ref_ptr<osgShadow::ShadowTexture> st = new osgShadow::ShadowTexture;
+    osg::ref_ptr<osgShadow::ParallelSplitShadowMap> pss = new osgShadow::ParallelSplitShadowMap;
+    //osg::ref_ptr<osgShadow::ShadowVolume> sv = new osgShadow::ShadowVolume;
+    osg::ref_ptr<osgShadow::MinimalShadowMap> ms = new osgShadow::MinimalShadowMap;
+    osg::ref_ptr<osgShadow::StandardShadowMap> ss = new osgShadow::StandardShadowMap;
+    osg::ref_ptr<osgShadow::SoftShadowMap> softS = new osgShadow::SoftShadowMap;
+    osg::ref_ptr<osgShadow::ViewDependentShadowTechnique> vds = new osgShadow::ViewDependentShadowTechnique;
+    //关联阴影纹理  
+    shadowedScene->setShadowTechnique(softS);
+
+    return shadowedScene;
 }
 
 

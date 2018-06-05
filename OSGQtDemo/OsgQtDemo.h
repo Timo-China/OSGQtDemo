@@ -3,6 +3,7 @@
 
 #include <QtWidgets/QMainWindow>
 #include <Osg/TextureCubeMap>
+#include <osgShadow/ShadowedScene>
 #include "ui_osgqtdemo.h"
 #include "OSGViewWidget.h"
 
@@ -48,34 +49,41 @@ private:
 
     /*
      *@brief:   创建战争场景
-     *@author:  dgy
+     *@author:  Timo
      *@date: 2018/05/28
      */
     void CreateWarScene(osg::Group* root);
 
     /*
      *@brief:   穿甲坐标轴方便查看
-     *@author:  dgy
+     *@author:  Timo
      *@date: 2018/05/28
      */
     osg::Geode* CreateCoordinateAxis(const osg::Vec3& corner,const osg::Vec3& xdir,const osg::Vec3& ydir,const osg::Vec3& zdir);
 
     /*
      *@brief:   创建房间
-     *@author:  dgy
+     *@author:  Timo
      *@date: 2018/06/05
      */
-    void CreateRoom(osg::Group* root, const osg::ref_ptr<osg::Node>& load_model);
+    void CreateRoom(osgShadow::ShadowedScene* shadow_scene, const osg::ref_ptr<osg::Node>& load_model);
 
 
     /*
      *@brief:   创建墙壁
-     *@author:  dgy
+     *@author:  Timo
      *@date: 2018/06/05
      */
     osg::Geometry* CreateWall(const osg::Vec3& v1,const osg::Vec3& v2,const osg::Vec3& v3,osg::StateSet* stateset);
 
+    /*
+     *@brief:   创建灯光
+     *@author:  Timo
+     *@date: 2018/06/05
+     */
     osg::Node* CreateLights(osg::BoundingBox& bb,osg::StateSet* rootStateSet);
+
+    osg::ref_ptr<osgShadow::ShadowedScene> CreateShadow();
 
 public:
 
