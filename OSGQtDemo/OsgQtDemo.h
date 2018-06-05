@@ -60,6 +60,23 @@ private:
      */
     osg::Geode* CreateCoordinateAxis(const osg::Vec3& corner,const osg::Vec3& xdir,const osg::Vec3& ydir,const osg::Vec3& zdir);
 
+    /*
+     *@brief:   创建房间
+     *@author:  dgy
+     *@date: 2018/06/05
+     */
+    void CreateRoom(osg::Group* root, const osg::ref_ptr<osg::Node>& load_model);
+
+
+    /*
+     *@brief:   创建墙壁
+     *@author:  dgy
+     *@date: 2018/06/05
+     */
+    osg::Geometry* CreateWall(const osg::Vec3& v1,const osg::Vec3& v2,const osg::Vec3& v3,osg::StateSet* stateset);
+
+    osg::Node* CreateLights(osg::BoundingBox& bb,osg::StateSet* rootStateSet);
+
 public:
 
     void ToggleAA();
@@ -100,6 +117,8 @@ public:
 public slots:
     void OnActionNewProject();
     void OnActionNewWarScene();
+    void OnActionLightTest();
+    void OnActionClearScene();
 
 protected:
     virtual void resizeEvent(QResizeEvent * event);

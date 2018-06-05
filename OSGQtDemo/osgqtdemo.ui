@@ -36,6 +36,7 @@
     <addaction name="action_newproject"/>
     <addaction name="actionNewWarScene"/>
     <addaction name="actionLight_test"/>
+    <addaction name="actionClearScene"/>
    </widget>
    <addaction name="menuNew"/>
   </widget>
@@ -64,6 +65,11 @@
   <action name="actionLight_test">
    <property name="text">
     <string>光照测试</string>
+   </property>
+  </action>
+  <action name="actionClearScene">
+   <property name="text">
+    <string>清除场景</string>
    </property>
   </action>
  </widget>

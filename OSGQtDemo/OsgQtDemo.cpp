@@ -7,6 +7,13 @@
 #include <osgText/Text>
 #include <osg/LineWidth>
 #include <osg/PositionAttitudeTransform>
+#include <osgUtil/SmoothingVisitor>
+#include <osg/Point>
+#include <osgShadow/ShadowedScene>
+#include <osgShadow/ShadowTexture>
+#include <osgShadow/ParallelSplitShadowMap>
+#include <osgShadow/MinimalShadowMap>
+#include <osgShadow/SoftShadowMap>
 #include "PickHandler.h"
 #include "AutoRotateCallBack.h"
 #include "TankOperator.h"
@@ -116,7 +123,8 @@ void OSGQtDemo::CreateConnect()
 {
     connect(ui.action_newproject, &QAction::triggered, this, &OSGQtDemo::OnActionNewProject);
     connect(ui.actionNewWarScene, &QAction::triggered, this, &OSGQtDemo::OnActionNewWarScene);
-    
+    connect(ui.actionLight_test, &QAction::triggered, this, &OSGQtDemo::OnActionLightTest);
+    connect(ui.actionClearScene, &QAction::triggered, this, &OSGQtDemo::OnActionClearScene);
 }
 
 void OSGQtDemo::OnActionNewProject()
@@ -133,6 +141,41 @@ void OSGQtDemo::OnActionNewWarScene()
 
     // 由于初始状态是未添加任何物体，所以未计算初始位置，所以添加新的物体后需要重新计算一下初始位置
     m_pOSGWidget->home();
+
+}
+
+void OSGQtDemo::OnActionLightTest()
+{
+    // 光照测试
+    osg::ref_ptr<osg::Node> glider_node = osgDB::readNodeFile("glider.osg");
+
+    //标识阴影接收对象  
+    const int ReceivesShadowTraversalMask=0x1;
+    //标识阴影投影对象  
+    const int CastsShadowTraversalMask=0x2;
+
+    //创建一个阴影节点，并标识接收对象和投影对象
+    osg::ref_ptr<osgShadow::ShadowedScene> shadowedScene = new osgShadow::ShadowedScene();
+    shadowedScene->setReceivesShadowTraversalMask(ReceivesShadowTraversalMask);
+    shadowedScene->setCastsShadowTraversalMask(CastsShadowTraversalMask);
+
+    //创建阴影纹理，使用的是shadowTexture技法  
+    osg::ref_ptr<osgShadow::ShadowTexture> st = new osgShadow::ShadowTexture;
+    osg::ref_ptr<osgShadow::ParallelSplitShadowMap> pss = new osgShadow::ParallelSplitShadowMap;
+    //osg::ref_ptr<osgShadow::ShadowVolume> sv = new osgShadow::ShadowVolume;
+    osg::ref_ptr<osgShadow::MinimalShadowMap> ms = new osgShadow::MinimalShadowMap;
+    osg::ref_ptr<osgShadow::StandardShadowMap> ss = new osgShadow::StandardShadowMap;
+    osg::ref_ptr<osgShadow::SoftShadowMap> softS = new osgShadow::SoftShadowMap;
+    osg::ref_ptr<osgShadow::ViewDependentShadowTechnique> vds = new osgShadow::ViewDependentShadowTechnique; 
+    //关联阴影纹理  
+    shadowedScene->setShadowTechnique(softS);
+
+    CreateRoom(shadowedScene.get(), glider_node);
+
+    m_SceneRoot->addChild(shadowedScene);
+
+    m_pOSGWidget->home();
+
 
 }
 
@@ -394,3 +437,257 @@ void OSGQtDemo::StopTurrentCallback(void* handle_window)
         window->StopTurrentLeft();
     }
 }
+
+osg::Geometry* OSGQtDemo::CreateWall(const osg::Vec3& v1,const osg::Vec3& v2,
+    const osg::Vec3& v3,osg::StateSet* stateset)
+{
+    osg::Geometry* geom = new osg::Geometry();
+
+    geom->setStateSet(stateset);
+
+    const unsigned int step_x = 100;
+    const unsigned int step_y = 100;
+
+    osg::Vec3Array* coordinate = new osg::Vec3Array();
+    coordinate->reserve(step_x * step_y);
+
+    // 墙壁模拟，将墙壁拆分为100*100个的小矩形，然后绘制100*100个矩形
+
+    osg::Vec3 dx = (v2-v1)/((float)step_x-1.0f);
+    osg::Vec3 dy = (v3-v1)/((float)step_y-1.0f);
+
+    // 定义每个矩形的点
+    osg::Vec3 row_start_point = v1;
+    for (int row = 0; row < step_y; row++)
+    {
+        osg::Vec3 v = row_start_point;
+        for (int col = 0; col < step_y; col++)
+        {
+            coordinate->push_back(v);
+            v += dx;
+        }
+        row_start_point += dy;
+    }
+
+    geom->setVertexArray(coordinate);
+
+    // 定义墙壁颜色
+    osg::Vec4Array* colors = new osg::Vec4Array;
+    colors->push_back(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+    geom->setColorArray(colors, osg::Array::BIND_OVERALL);
+
+    for (int row = 0; row < step_y-1; row++)
+    {
+        osg::DrawElementsUShort* quad_strip = new osg::DrawElementsUShort(osg::PrimitiveSet::QUAD_STRIP);
+        for (int col = 0; col < step_x; col++)
+        {
+            quad_strip->push_back((row+1)*step_x + col);
+            quad_strip->push_back(row*step_x + col);
+        }
+        geom->addPrimitiveSet(quad_strip);
+    }
+
+    // create the normals.
+    osgUtil::SmoothingVisitor::smooth(*geom);
+
+    return geom;
+
+}
+
+void OSGQtDemo::CreateRoom(osg::Group* root, const osg::ref_ptr<osg::Node>& load_model)
+{
+    osg::BoundingSphere bound_sphere;
+
+    if (load_model)
+    {
+        const osg::BoundingSphere& bs = load_model->getBound();
+
+        osg::PositionAttitudeTransform* pat = new osg::PositionAttitudeTransform();
+        pat->setPivotPoint(bs.center());
+
+        pat->addChild(load_model);
+        bound_sphere = pat->getBound();
+
+        root->addChild(pat);
+    }
+
+    bound_sphere.radius() *= 2.f;
+    osg::BoundingBox bb;
+    bb.expandBy(bound_sphere);
+
+    // create statesets.
+    osg::StateSet* rootStateSet = new osg::StateSet;
+    root->setStateSet(rootStateSet);
+
+    osg::StateSet* wall = new osg::StateSet;
+    wall->setMode(GL_CULL_FACE,osg::StateAttribute::ON);
+
+    osg::StateSet* floor = new osg::StateSet;
+    floor->setMode(GL_CULL_FACE,osg::StateAttribute::ON);
+
+    osg::StateSet* roof = new osg::StateSet;
+    roof->setMode(GL_CULL_FACE,osg::StateAttribute::ON);
+
+    osg::Geode* geode = new osg::Geode;
+
+    // create front side.
+    geode->addDrawable(CreateWall(bb.corner(0),
+        bb.corner(4),
+        bb.corner(1),
+        wall));
+
+    // right side
+    geode->addDrawable(CreateWall(bb.corner(1),
+        bb.corner(5),
+        bb.corner(3),
+        wall));
+
+    // left side
+    geode->addDrawable(CreateWall(bb.corner(2),
+        bb.corner(6),
+        bb.corner(0),
+        wall));
+    // back side
+    geode->addDrawable(CreateWall(bb.corner(3),
+        bb.corner(7),
+        bb.corner(2),
+        wall));
+
+    // floor
+    geode->addDrawable(CreateWall(bb.corner(0),
+        bb.corner(1),
+        bb.corner(2),
+        floor));
+
+    // roof
+    geode->addDrawable(CreateWall(bb.corner(6),
+        bb.corner(7),
+        bb.corner(4),
+        roof));
+
+    root->addChild(geode);
+
+    root->addChild(CreateLights(bb, rootStateSet));
+}
+
+
+
+/*
+ 光照的参数部分说明
+ GL_AMBIENT （0，0，0，1） 光源泛光强度的RGBA值
+ GL_DIFFUSE （1，1，1，1） 光源漫反射强度的RGBA值
+ GL_SPECULAR （1，1，1，1） 光源镜面反射强度的RGBA值
+ GL_POSITION （0，0，1，0） 光源的位置（x,y,z,w）
+ GL_SPOT_DIRCTION （0，0，-1）聚光灯的方向（x,y,z）
+ GL_SPOT_EXPONENT 0 聚光灯指数
+ GL_SPOT_CUTOFF 180 指定光源的最大散布角
+ GL_CONSTANT_ATTENUATION 1 衰减因子常量
+ GL_LINEAR_ATTENUATION 0 线形衰减因子
+ GL_QUADRIC_ATTENUATION 0 二次衰减因子
+*/
+
+osg::Node* OSGQtDemo::CreateLights(osg::BoundingBox& bb,osg::StateSet* rootStateSet)
+{
+    osg::Group* lightGroup = new osg::Group;
+
+    float modelSize = bb.radius();
+
+    // 固定光源
+    osg::Light* myLight1 = new osg::Light;
+    myLight1->setLightNum(0);
+    myLight1->setPosition(osg::Vec4(bb.corner(4),1.0f));
+    myLight1->setAmbient(osg::Vec4(1.0f,0.0f,0.0f,1.0f));
+    myLight1->setDiffuse(osg::Vec4(1.0f,0.0f,0.0f,1.0f));
+    myLight1->setSpotCutoff(20.0f);         //.光照的散步角
+    myLight1->setSpotExponent(50.0f);
+    myLight1->setDirection(osg::Vec3(1.0f,1.0f,-1.0f));
+
+    osg::LightSource* lightS1 = new osg::LightSource;
+    lightS1->setLight(myLight1);
+    lightS1->setLocalStateSetModes(osg::StateAttribute::ON);
+
+    lightS1->setStateSetModes(*rootStateSet,osg::StateAttribute::ON);
+    lightGroup->addChild(lightS1);
+
+
+    // 移动光源
+    osg::Light* myLight2 = new osg::Light;
+    myLight2->setLightNum(1);
+    myLight2->setPosition(osg::Vec4(0.0,0.0,0.0,1.0f));
+    myLight2->setAmbient(osg::Vec4(0.0f,1.0f,1.0f,1.0f));
+    myLight2->setDiffuse(osg::Vec4(0.0f,1.0f,1.0f,1.0f));
+    myLight2->setConstantAttenuation(1.0f);
+    myLight2->setLinearAttenuation(2.0f/modelSize);
+    myLight2->setQuadraticAttenuation(2.0f/osg::square(modelSize));
+
+    osg::LightSource* lightS2 = new osg::LightSource;
+    lightS2->setLight(myLight2);
+    lightS2->setLocalStateSetModes(osg::StateAttribute::ON);
+
+    lightS2->setStateSetModes(*rootStateSet,osg::StateAttribute::ON);
+
+    osg::MatrixTransform* mt = new osg::MatrixTransform();
+    {
+        // set up the animation path
+        osg::AnimationPath* animationPath = new osg::AnimationPath;
+        animationPath->insert(0.0,osg::AnimationPath::ControlPoint(bb.corner(0)));
+        animationPath->insert(1.0,osg::AnimationPath::ControlPoint(bb.corner(1)));
+        animationPath->insert(2.0,osg::AnimationPath::ControlPoint(bb.corner(2)));
+        animationPath->insert(3.0,osg::AnimationPath::ControlPoint(bb.corner(3)));
+        animationPath->insert(4.0,osg::AnimationPath::ControlPoint(bb.corner(4)));
+        animationPath->insert(5.0,osg::AnimationPath::ControlPoint(bb.corner(5)));
+        animationPath->insert(6.0,osg::AnimationPath::ControlPoint(bb.corner(6)));
+        animationPath->insert(7.0,osg::AnimationPath::ControlPoint(bb.corner(7)));
+        animationPath->insert(8.0,osg::AnimationPath::ControlPoint(bb.corner(0)));
+        animationPath->setLoopMode(osg::AnimationPath::SWING);
+
+        mt->setUpdateCallback(new osg::AnimationPathCallback(animationPath));
+    }
+
+    // create marker for point light.
+    osg::Geometry* marker = new osg::Geometry;
+    osg::Vec3Array* vertices = new osg::Vec3Array;
+    vertices->push_back(osg::Vec3(0.0,0.0,0.0));
+    marker->setVertexArray(vertices);
+    marker->addPrimitiveSet(new osg::DrawArrays(GL_POINTS,0,1));
+
+    osg::StateSet* stateset = new osg::StateSet;
+    osg::Point* point = new osg::Point;
+    point->setSize(4.0f);
+    stateset->setAttribute(point);
+
+    marker->setStateSet(stateset);
+
+    osg::Geode* markerGeode = new osg::Geode;
+    markerGeode->addDrawable(marker);
+
+    mt->addChild(lightS2);
+    mt->addChild(markerGeode);
+
+    lightGroup->addChild(mt);
+
+    return lightGroup;
+}
+
+void OSGQtDemo::OnActionClearScene()
+{
+    if (m_SceneRoot && m_SceneRoot->getNumChildren() > 0)
+    {
+        int children_count = m_SceneRoot->getNumChildren();
+        for (int i = 0; i< children_count; i++)
+        {
+            osg::Node* node = m_SceneRoot->getChild(i);
+            if (node->getName() == "hud_camera")
+            {
+                continue;
+            }
+            m_SceneRoot->removeChild(node);
+            i--;
+            children_count--;
+        }
+        m_pOSGWidget->update();
+    }
+}
+
+
