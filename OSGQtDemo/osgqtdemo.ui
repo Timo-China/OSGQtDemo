@@ -37,6 +37,10 @@
     <addaction name="actionNewWarScene"/>
     <addaction name="actionLight_test"/>
     <addaction name="actionSequence_test"/>
+    <addaction name="actionBoomEffect"/>
+    <addaction name="actionParticleEffect"/>
+    <addaction name="actionAnisotropic_light"/>
+    <addaction name="actionCartoon_render"/>
     <addaction name="actionClearScene"/>
    </widget>
    <addaction name="menuNew"/>
@@ -76,6 +80,26 @@
   <action name="actionSequence_test">
    <property name="text">
     <string>帧动画</string>
+   </property>
+  </action>
+  <action name="actionBoomEffect">
+   <property name="text">
+    <string>爆炸效果</string>
+   </property>
+  </action>
+  <action name="actionParticleEffect">
+   <property name="text">
+    <string>自定义例子系统</string>
+   </property>
+  </action>
+  <action name="actionAnisotropic_light">
+   <property name="text">
+    <string>异性光照</string>
+   </property>
+  </action>
+  <action name="actionCartoon_render">
+   <property name="text">
+    <string>卡通渲染</string>
    </property>
   </action>
  </widget>

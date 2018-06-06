@@ -102,10 +102,24 @@ private:
 
     /*
      *@brief:   放大结点
-     *@author:  dgy
+     *@author:  Timo
      *@date: 2018/06/05
      */
     osg::ref_ptr<osg::Node> ScaleNode(osg::Node* node, float target_scale);
+
+    /*
+     *@brief:   创建爆炸效果
+     *@author:  Timo
+     *@date: 2018/06/06
+     */
+    osg::ref_ptr<osg::Node> CreateBoomEffect();
+
+    /*
+     *@brief:   创建自定义的例子效果
+     *@author:  Timo
+     *@date: 2018/06/06
+     */
+    osg::ref_ptr<osg::Node> CreateParticleEffect();
 
 public:
 
@@ -150,6 +164,10 @@ public slots:
     void OnActionLightTest();
     void OnActionClearScene();
     void OnActionSequeceTest();
+    void OnActionBoomEffect();
+    void OnActionParticleEffect();
+    void OnActionAnisotropicLight();
+    void OnActionCartoonRender();
 
 protected:
     virtual void resizeEvent(QResizeEvent * event);

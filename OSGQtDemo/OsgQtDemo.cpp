@@ -13,6 +13,16 @@
 #include <osgShadow/ParallelSplitShadowMap>
 #include <osgShadow/MinimalShadowMap>
 #include <osgShadow/SoftShadowMap>
+#include <osgParticle/ExplosionEffect>
+#include <osgParticle/ExplosionDebrisEffect>
+#include <osgParticle/SmokeEffect>
+#include <osgParticle/FireEffect>
+#include <osgParticle/ModularProgram>
+#include <osgParticle/AccelOperator>
+#include <osgParticle/FluidFrictionOperator>
+#include <osgParticle/ParticleSystemUpdater>
+#include <osgFX/AnisotropicLighting>
+#include <osgFX/Cartoon>
 #include "PickHandler.h"
 #include "AutoRotateCallBack.h"
 #include "TankOperator.h"
@@ -125,7 +135,10 @@ void OSGQtDemo::CreateConnect()
     connect(ui.actionLight_test, &QAction::triggered, this, &OSGQtDemo::OnActionLightTest);
     connect(ui.actionClearScene, &QAction::triggered, this, &OSGQtDemo::OnActionClearScene);
     connect(ui.actionSequence_test, &QAction::triggered, this, &OSGQtDemo::OnActionSequeceTest);
-    
+    connect(ui.actionBoomEffect, &QAction::triggered, this, &OSGQtDemo::OnActionBoomEffect);
+    connect(ui.actionParticleEffect, &QAction::triggered, this, &OSGQtDemo::OnActionParticleEffect);
+    connect(ui.actionAnisotropic_light, &QAction::triggered, this, &OSGQtDemo::OnActionAnisotropicLight);
+    connect(ui.actionCartoon_render, &QAction::triggered, this, &OSGQtDemo::OnActionCartoonRender);
 }
 
 void OSGQtDemo::OnActionNewProject()
@@ -759,6 +772,192 @@ osg::ref_ptr<osg::Node> OSGQtDemo::ScaleNode(osg::Node* node, float target_scale
 
     return pat;
 
+}
+
+void OSGQtDemo::OnActionBoomEffect()
+{
+    m_SceneRoot->addChild(CreateBoomEffect().get());
+
+    m_pOSGWidget->home();
+
+}
+
+osg::ref_ptr<osg::Node> OSGQtDemo::CreateBoomEffect()
+{
+    osg::ref_ptr<osg::Group> root = new osg::Group();
+
+    osg::Vec3 wind_direction(1.0f, 0.f, 0.f);
+
+    osg::Vec3 boom_position(0.f, 0.f, -10.f);
+
+    // 爆炸模拟
+    osg::ref_ptr<osgParticle::ExplosionEffect> explosion = new osgParticle::ExplosionEffect(boom_position, 10.f);
+
+    // 爆炸碎片模拟
+    osg::ref_ptr<osgParticle::ExplosionDebrisEffect> explosion_debris = new osgParticle::ExplosionDebrisEffect(boom_position, 10.0f);
+
+    // 烟雾效果
+    osg::ref_ptr<osgParticle::SmokeEffect> smoke = new osgParticle::SmokeEffect(boom_position, 10.0f);
+
+    // 火焰效果
+    osg::ref_ptr<osgParticle::FireEffect> fire = new osgParticle::FireEffect(boom_position, 10.f);
+
+    explosion->setWind(wind_direction);
+    explosion_debris->setWind(wind_direction);
+    smoke->setWind(wind_direction);
+    fire->setWind(wind_direction);
+
+    root->addChild(explosion);
+    root->addChild(explosion_debris);
+    root->addChild(smoke);
+    root->addChild(fire);
+
+    return root;
+
+}
+
+void OSGQtDemo::OnActionParticleEffect()
+{
+    m_SceneRoot->addChild(CreateParticleEffect().get());
+
+    m_pOSGWidget->home();
+}
+
+osg::ref_ptr<osg::Node> OSGQtDemo::CreateParticleEffect()
+{
+    osg::ref_ptr<osg::Group> root = new osg::Group;
+
+    // 单个粒子系统模版
+    osgParticle::Particle particle_template;
+
+    // 粒子生命周期，2秒钟
+    particle_template.setLifeTime(2);
+
+    // 粒子大小的范围
+    particle_template.setSizeRange(osgParticle::rangef(0.5f, 3.0f));
+
+    // 粒子的alpha范围
+    particle_template.setAlphaRange(osgParticle::rangef(0.5, 1));
+
+    // 粒子的颜色变化范围
+    particle_template.setColorRange(osgParticle::rangev4(osg::Vec4(1.0f, 0.5f, 0.6f, 1.0f),  osg::Vec4(0.0f, 1.0f, 0.6f, 0.0f)));
+
+    // 设置粒子的半径
+    particle_template.setRadius(0.05f);
+
+    // 设置粒子重量
+    particle_template.setMass(0.05f);
+
+
+    // 创建粒子系统
+    osg::ref_ptr<osgParticle::ParticleSystem> particle_sys = new osgParticle::ParticleSystem();
+
+    // 设置材质
+    particle_sys->setDefaultAttributes("Images/smoke.rgb", false, false);
+
+    particle_sys->setDefaultParticleTemplate(particle_template);
+
+
+    // 创建粒子的放射器
+    osg::ref_ptr<osgParticle::ModularEmitter> emitter = new osgParticle::ModularEmitter;
+
+    // 将粒子系统与粒子发射器关联
+    emitter->setParticleSystem(particle_sys.get());
+
+    // 创建粒子计数器
+    osg::ref_ptr<osgParticle::RandomRateCounter> counter = new osgParticle::RandomRateCounter();
+    // 设置每秒添加的例子数
+    counter->setRateRange(100.f, 150.f);
+
+    emitter->setCounter(counter.get());
+
+    // 设置点放置器
+    osg::ref_ptr<osgParticle::PointPlacer> placer = new osgParticle::PointPlacer;
+    placer->setCenter(osg::Vec3(0.0f, 0.0f, 0.0f));
+    emitter->setPlacer(placer.get());
+
+
+    // 创建弧度发射器
+    osg::ref_ptr<osgParticle::RadialShooter> shooter = new osgParticle::RadialShooter;
+    shooter->setInitialSpeedRange(50,100);
+    // 弧度值，与Z轴夹角
+    shooter->setThetaRange(0.0, osg::PI_2);
+    emitter->setShooter(shooter.get());
+
+    root->addChild(emitter.get());
+
+    // 创建标准编程器对象， 控制粒子在生命周期中的更新
+    osg::ref_ptr<osgParticle::ModularProgram> program = new osgParticle::ModularProgram;
+    program->setParticleSystem(particle_sys.get());
+
+    // 创建重力模拟对象
+    osg::ref_ptr<osgParticle::AccelOperator> ap = new osgParticle::AccelOperator();
+    // 设置重力加速度，默认为9.8
+    ap->setToGravity(-1.0);
+    program->addOperator(ap.get());
+
+    // 创建空气阻力模拟
+    osg::ref_ptr<osgParticle::FluidFrictionOperator> fluid_friction = new osgParticle::FluidFrictionOperator();
+    // 设置空气属性， FluidViscosity 1.8e-5f, FluidDensity 1.2929f
+    fluid_friction->setFluidToAir();
+    program->addOperator(fluid_friction.get());
+
+    // 添加场景
+    root->addChild(program.get());
+
+    // 添加更新器，实现每个粒子的管理
+    osg::ref_ptr<osgParticle::ParticleSystemUpdater> particle_sys_updater = new osgParticle::ParticleSystemUpdater;
+    particle_sys_updater->addParticleSystem(particle_sys.get());
+
+
+    // 加入到场景中
+    osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+    geode->addDrawable(particle_sys.get());
+
+    root->addChild(geode.get());
+    root->addChild(particle_sys_updater.get());
+
+    return root;
+
+}
+
+void OSGQtDemo::OnActionAnisotropicLight()
+{
+    osg::ref_ptr<osg::Node> node = osgDB::readNodeFile("cessna.osg");
+
+    osg::ref_ptr<osg::Image> image = osgDB::readImageFile("Images/osg256.png");
+
+    osg::ref_ptr<osgFX::AnisotropicLighting> atl = new osgFX::AnisotropicLighting;
+    atl->setLightingMap(image.get());
+
+    atl->setLightNumber(7);
+
+    atl->addChild(node.get());
+
+    m_SceneRoot->addChild(atl.get());
+
+    m_pOSGWidget->home();
+
+}
+
+void OSGQtDemo::OnActionCartoonRender()
+{
+    osg::ref_ptr<osg::Node> node = osgDB::readNodeFile("cessna.osg");
+
+    osg::ref_ptr<osgFX::Cartoon> cartoon = new osgFX::Cartoon();
+
+    // 设置轮廓线的颜色
+    cartoon->setOutlineColor(osg::Vec4(1.0f, 1.0f,1.0f,1.0f));
+
+    cartoon->setOutlineLineWidth(2.0f);
+
+    cartoon->setLightNumber(0);
+
+    cartoon->addChild(node.get());
+
+    m_SceneRoot->addChild(cartoon.get());
+
+    m_pOSGWidget->home();
 }
 
 
